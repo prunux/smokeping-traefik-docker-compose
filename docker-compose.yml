@@ -1,0 +1,45 @@
+version: "3.5"
+
+services:
+
+  smokeping:
+    image: linuxserver/smokeping
+    container_name: smokeping
+    hostname: mydockerprobe
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ}
+    volumes:
+      - ${CONFIG_SMOKEPING}/config:/config
+      - ${CONFIG_SMOKEPING}/data:/data
+    ports:
+      - 80:80
+    restart: ${RESTART_POLICY}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.smokeping-https.rule=Host(`myhostname.mydomain`)"
+      - "traefik.http.routers.smokeping-https.entrypoints=websecure"
+      - "traefik.http.routers.smokeping-https.tls.certresolver=myresolver"
+
+  traefik:
+    image: traefik:v2.2
+    container_name: traefik
+    command:
+    # - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+    # - "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--certificatesresolvers.myresolver.acme.email=letsencrypt-receiver@mydomain"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - 443:443
+      - 8080:8080
+    volumes:
+      - ${CONFIG_TRAEFIK}/letsencrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: ${RESTART_POLICY}
+
