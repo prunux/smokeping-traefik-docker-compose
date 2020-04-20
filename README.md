@@ -1,7 +1,7 @@
 # Smokeping on Docker using Trafik for TLS and Let's Encrypt
 
 This repository contains the necessary tools to run a [Smokeping] on [Docker] using
-[Docker Compose] and [Trafik].
+[Docker Compose] and [Traefik].
 
 ## Quick start
 
